@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Administración | ÓpticaVision</title>
+<link rel="stylesheet" href="/admin/admin.css">
+<script defer src="/admin/admin.js"></script>
+</head>
+<body>
+<header><div><strong>ÓpticaVision</strong><small>Administración general</small></div><span class="tag">ADMIN</span></header>
+<main>
+<h1>Panel del administrador</h1>
+<p>Gestiona las cuentas, asigna permisos y consulta la operación del sistema.</p>
+<div id="mensaje" role="status" aria-live="polite"></div>
+<section class="grid">
+<a class="card" href="/admin/usuarios.html"><span>👥</span><strong>Gestión de usuarios</strong><small>Crear vendedores y asignar permisos</small></a>
+<a class="card" href="/vendedor/dashboard.html"><span>📦</span><strong>Operación de la óptica</strong><small>Inventario, clientes, mediciones y ventas</small></a>
+<a class="card" href="/vendedor/facturas.html"><span>🧾</span><strong>Facturas</strong><small>Consultar comprobantes de venta</small></a>
+</section>
+<form action="/logout" method="post" id="salir"><input type="hidden" name="_csrf" id="csrf-salir"><button>Cerrar sesión</button></form>
+</main></body></html>

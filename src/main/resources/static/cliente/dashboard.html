@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cliente | ÓpticaVision</title>
+<style>
+*{box-sizing:border-box}body{font-family:system-ui,Arial,sans-serif;margin:0;background:#f4f7fb;color:#18344f}header{background:#123b65;color:white;padding:20px 5%;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}main{max-width:1100px;margin:30px auto;padding:0 20px}h1,h2{color:#123b65}.tabs{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}.tabs button{padding:11px 15px;background:#fff;border:1px solid #ccd9e6;border-radius:8px;cursor:pointer}.tabs button.active{background:#147ba5;color:white}.panel{background:white;border:1px solid #dce6ee;border-radius:14px;padding:22px;margin-bottom:24px;box-shadow:0 2px 12px #18344f0b;overflow:auto}table{width:100%;border-collapse:collapse;min-width:650px}th,td{text-align:left;padding:12px;border-bottom:1px solid #e5eaf0}th{background:#f5f8fc}button{cursor:pointer}.out{background:#b83746;color:white;border:0;padding:10px 15px;border-radius:8px}.hidden{display:none}#aviso{color:#b22535}
+</style>
+<script defer src="/cliente/dashboard.js"></script>
+</head>
+<body>
+<header><strong>👓 ÓpticaVision · Portal del cliente</strong><form action="/logout" method="post"><input type="hidden" id="csrf" name="_csrf"><button class="out" type="submit">Cerrar sesión</button></form></header>
+<main><h1>Mi cuenta</h1><p id="aviso" role="alert"></p>
+<div class="tabs"><button type="button" class="active" data-tab="perfil">Mi perfil</button><button type="button" data-tab="catalogo">Catálogo</button><button type="button" data-tab="mediciones">Mis mediciones</button><button type="button" data-tab="compras">Mis compras</button></div>
+<section id="perfil" class="panel"><h2>Información personal</h2><div id="datos-perfil">Cargando...</div></section>
+<section id="catalogo" class="panel hidden"><h2>Productos disponibles</h2><table><thead><tr><th>Nombre</th><th>Categoría</th><th>Marca</th><th>Precio</th><th>Existencias</th></tr></thead><tbody id="datos-catalogo"></tbody></table></section>
+<section id="mediciones" class="panel hidden"><h2>Historial de graduaciones</h2><table><thead><tr><th>Fecha</th><th>Esfera OD</th><th>Cilindro OD</th><th>Esfera OI</th><th>Cilindro OI</th><th>Observaciones</th></tr></thead><tbody id="datos-mediciones"></tbody></table></section>
+<section id="compras" class="panel hidden"><h2>Mis compras</h2><table><thead><tr><th>Venta</th><th>Fecha</th><th>Subtotal</th><th>Impuesto</th><th>Total</th><th>Estado</th></tr></thead><tbody id="datos-compras"></tbody></table></section>
+</main>
+</body>
+</html>

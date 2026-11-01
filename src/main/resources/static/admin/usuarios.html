@@ -1,0 +1,7 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gestión de usuarios | ÓpticaVision</title><link rel="stylesheet" href="/gestion-usuarios/usuarios.css"><script defer src="/gestion-usuarios/usuarios.js"></script></head>
+<body><header><div><strong>ÓpticaVision</strong><small>Gestión de cuentas</small></div><span class="tag">ADMIN</span></header>
+<main><div class="tools"><a href="/admin/dashboard.html">Volver al panel</a></div><h1>Vendedores y permisos</h1><p>Solo ADMIN puede conceder o revocar permisos. Los vendedores autorizados pueden crear cuentas normales, sin delegar permisos.</p><p id="aviso" role="status" aria-live="polite"></p>
+<section class="panel"><h2>Crear vendedor</h2><form id="form-usuarios"><label>Nombre<input name="nombre" maxlength="100" required></label><label>Correo<input name="correo" type="email" maxlength="150" required></label><label>Contraseña inicial<input name="password" type="password" minlength="12" maxlength="200" autocomplete="new-password" required></label><label class="checkbox" id="permitir"><input type="checkbox" name="puedeCrearUsuarios"> Permitir que este vendedor cree otros vendedores</label><button type="submit">Registrar vendedor</button></form></section>
+<section class="panel"><h2>Vendedores registrados</h2><div style="overflow-x:auto"><table><thead><tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Activo</th><th>Puede crear usuarios</th></tr></thead><tbody id="lista"></tbody></table></div></section>
+</main></body></html>
