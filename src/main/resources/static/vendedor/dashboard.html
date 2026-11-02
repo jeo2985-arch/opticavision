@@ -1,88 +1,587 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel del vendedor | ÓpticaVision</title>
+
     <link rel="stylesheet" href="/vendedor/dashboard.css">
     <script defer src="/vendedor/dashboard.js"></script>
 </head>
+
 <body>
-<header class="cabecera">
-    <div class="marca"><span class="marca-icono">◉</span><div><strong>ÓpticaVision</strong><small>Gestión de óptica</small></div></div>
-    <div class="cabecera-derecha"><span class="etiqueta">VENDEDOR</span><form action="/logout" method="post" id="salir"><input type="hidden" name="_csrf" id="csrf-salir"><button class="boton boton-salir" type="submit">Cerrar sesión</button></form></div>
-</header>
-<div class="envoltura">
-    <nav class="menu" aria-label="Navegación del vendedor">
-        <button class="menu-boton activo" data-seccion="inicio" type="button">⌂ <span>Resumen</span></button>
-        <button class="menu-boton" data-seccion="inventario" type="button">▣ <span>Inventario</span></button>
-        <button class="menu-boton" data-seccion="clientes" type="button">♙ <span>Clientes</span></button>
-        <button class="menu-boton" data-seccion="mediciones" type="button">◌ <span>Mediciones</span></button>
-        <button class="menu-boton" data-seccion="ventas" type="button">▤ <span>Ventas</span></button>
-        <a class="menu-boton" style="text-decoration:none" href="/vendedor/facturas.html">▤ <span>Facturas</span></a>
-        
-    </nav>
-    <main class="contenido">
-        <div id="mensaje" class="mensaje" role="status" aria-live="polite" hidden></div>
-        <section id="inicio" class="seccion visible">
-            <div class="seccion-encabezado"><div><p class="subtitulo">ADMINISTRACIÓN</p><h1>Panel del vendedor</h1><p>Gestiona la operación diaria de ÓpticaVision.</p></div><button type="button" class="boton boton-secundario" id="refrescar">Actualizar resumen</button></div>
-            <div class="estadisticas">
-                <article class="estadistica"><span>Productos activos</span><strong id="k-productos">—</strong></article>
-                <article class="estadistica"><span>Stock bajo (&lt; 5)</span><strong id="k-stock">—</strong></article>
-                <article class="estadistica"><span>Clientes</span><strong id="k-clientes">—</strong></article>
-                <article class="estadistica"><span>Ventas</span><strong id="k-ventas">—</strong></article>
+
+    <!-- ========== CABECERA ========== -->
+    <header class="cabecera">
+        <div class="marca">
+            <span class="marca-icono">◉</span>
+            <div>
+                <strong>ÓpticaVision</strong>
+                <small>Gestión de óptica</small>
             </div>
-            <h2>Accesos rápidos</h2>
-            <div class="accesos"><button class="acceso" data-ir="inventario" type="button">▣<strong>Inventario</strong><span>Monturas, cristales y accesorios</span></button><button class="acceso" data-ir="clientes" type="button">♙<strong>Clientes</strong><span>Registro y edición</span></button><button class="acceso" data-ir="mediciones" type="button">◌<strong>Mediciones</strong><span>Historial óptico</span></button><button class="acceso" data-ir="ventas" type="button">▤<strong>Ventas</strong><span>Facturación y stock</span></button></div>
-        </section>
-        <section id="inventario" class="seccion">
-            <div class="seccion-encabezado"><div><h1>Inventario</h1><p>Registra y actualiza los productos disponibles.</p></div></div>
-            <div class="panel"><h2 id="titulo-producto">Registrar producto</h2><form id="form-producto" class="formulario">
-                <input type="hidden" name="idProducto"><label>Nombre<input name="nombre" maxlength="150" required></label>
-                <label>Categoría<select name="categoria" required><option value="MONTURA">Montura</option><option value="CRISTAL">Cristal</option><option value="ACCESORIO">Accesorio</option></select></label>
-                <label>Marca<input name="marca" maxlength="100"></label><label>Material<input name="material" maxlength="100"></label>
-                <label>Forma<input name="forma" maxlength="50"></label><label>Precio (L)<input type="number" name="precio" min="0" step="0.01" required></label>
-                <label>Existencias<input type="number" name="stock" min="0" step="1" required></label><label class="campo-completo">Descripción<textarea name="descripcion" maxlength="500" rows="2"></textarea></label>
-                <label class="check"><input type="checkbox" name="activo" checked> Producto activo</label>
-                <div class="acciones"><button type="submit" class="boton">Guardar producto</button><button type="button" class="boton boton-secundario" id="cancelar-producto">Limpiar</button></div>
-            </form></div>
-            <div class="panel"><div class="fila-titulo"><h2>Productos registrados</h2><input type="search" id="filtro-productos" placeholder="Buscar producto" aria-label="Buscar producto"></div><div class="tabla-contenedor"><table><thead><tr><th>ID</th><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Estado</th><th>Acción</th></tr></thead><tbody id="tabla-productos"></tbody></table></div></div>
-        </section>
-        <section id="clientes" class="seccion">
-            <div class="seccion-encabezado"><div><h1>Clientes</h1><p>Registra clientes vinculados a cuentas CLIENTE.</p></div></div>
-            <div class="panel"><h2 id="titulo-cliente">Registrar cliente</h2><form id="form-cliente" class="formulario">
-                <input type="hidden" name="idCliente"><label>Nombre completo<input name="nombre" maxlength="100" required></label><label>DNI<input name="dni" maxlength="20" required></label>
-                <label>Teléfono<input name="telefono" maxlength="20" required></label><label>Correo<input type="email" name="correo" maxlength="150" required></label>
-                <label class="campo-completo" id="campo-password">Contraseña inicial del cliente<input type="password" name="password" minlength="12" autocomplete="new-password"><small>Al registrar una cuenta nueva, usa una contraseña temporal de al menos 12 caracteres. No utilices contraseñas personales.</small></label>
-                <div class="acciones"><button type="submit" class="boton">Guardar cliente</button><button type="button" class="boton boton-secundario" id="cancelar-cliente">Limpiar</button></div>
-            </form></div>
-            <div class="panel"><h2>Clientes registrados</h2><div class="tabla-contenedor"><table><thead><tr><th>ID</th><th>Nombre</th><th>DNI</th><th>Teléfono</th><th>Correo</th><th>Acción</th></tr></thead><tbody id="tabla-clientes"></tbody></table></div></div>
-        </section>
-        <section id="mediciones" class="seccion">
-            <div class="seccion-encabezado"><div><h1>Mediciones</h1><p>Consulta y registra historiales de graduación.</p></div></div>
-            <div class="panel"><label>Cliente<select id="medicion-cliente"><option value="">Selecciona un cliente</option></select></label><h2>Nueva medición</h2><form id="form-medicion" class="formulario">
-                <label>Fecha<input type="date" name="fechaMedicion" required></label><label>Esfera OD<input name="esferaOD" type="number" step="0.01"></label>
-                <label>Cilindro OD<input name="cilindroOD" type="number" step="0.01"></label><label>Eje OD<input name="ejeOD" type="number" min="0" max="180" step="1"></label>
-                <label>Adición OD<input name="adicionOD" type="number" step="0.01"></label><label>Esfera OI<input name="esferaOI" type="number" step="0.01"></label>
-                <label>Cilindro OI<input name="cilindroOI" type="number" step="0.01"></label><label>Eje OI<input name="ejeOI" type="number" min="0" max="180" step="1"></label>
-                <label>Adición OI<input name="adicionOI" type="number" step="0.01"></label><label class="campo-completo">Observaciones<textarea name="observaciones" maxlength="500" rows="2"></textarea></label>
-                <div class="acciones"><button type="submit" class="boton">Guardar medición</button></div>
-            </form></div>
-            <div class="panel"><h2>Historial del cliente</h2><div class="tabla-contenedor"><table><thead><tr><th>ID</th><th>Fecha</th><th>OD: E / C / Eje / Add</th><th>OI: E / C / Eje / Add</th><th>Observaciones</th></tr></thead><tbody id="tabla-mediciones"></tbody></table></div></div>
-        </section>
-        <section id="ventas" class="seccion">
-            <div class="seccion-encabezado"><div><h1>Ventas</h1><p>Registra ventas con actualización automática de inventario.</p></div></div>
-            <div class="panel"><h2>Registrar venta</h2><form id="form-venta" class="formulario">
-                <label>Cliente<select name="idCliente" id="venta-cliente" required><option value="">Selecciona un cliente</option></select></label>
-                <label>Medición asociada (opcional)<select name="idMedicion" id="venta-medicion"><option value="">Sin medición</option></select></label>
-                <div class="campo-completo"><h3>Productos de la venta</h3><div id="lineas-venta"></div><button type="button" class="boton boton-secundario" id="agregar-linea">Agregar producto</button></div>
-                <div class="campo-completo aviso" id="impuesto-info">El impuesto se calcula al guardar la venta según la configuración del sistema.</div>
-                <div class="acciones"><button class="boton" type="submit">Confirmar venta</button></div>
-            </form></div>
-            <div class="panel"><h2>Historial de ventas</h2><div class="tabla-contenedor"><table><thead><tr><th>ID</th><th>Fecha</th><th>Cliente</th><th>Subtotal</th><th>Impuesto</th><th>Total</th><th>Estado</th><th>Detalle</th></tr></thead><tbody id="tabla-ventas"></tbody></table></div><div id="detalle-venta" class="detalle-venta" hidden></div></div>
-        </section>
-    </main>
-</div>
-<footer>ÓpticaVision · Sistema de gestión para ópticas</footer>
+        </div>
+
+        <div class="cabecera-derecha">
+            <span class="etiqueta">VENDEDOR</span>
+
+            <form action="/logout" method="post" id="salir">
+                <input type="hidden" name="_csrf" id="csrf-salir">
+                <button class="boton boton-salir" type="submit">
+                    Cerrar sesión
+                </button>
+            </form>
+        </div>
+    </header>
+
+    <div class="envoltura">
+
+        <!-- ========== MENÚ LATERAL ========== -->
+        <nav class="menu" aria-label="Navegación del vendedor">
+
+            <button class="menu-boton activo"
+                    data-seccion="inicio" type="button">
+                ⌂ <span>Resumen</span>
+            </button>
+
+            <button class="menu-boton"
+                    data-seccion="inventario" type="button">
+                ▣ <span>Inventario</span>
+            </button>
+
+            <button class="menu-boton"
+                    data-seccion="clientes" type="button">
+                ♙ <span>Clientes</span>
+            </button>
+
+            <button class="menu-boton"
+                    data-seccion="mediciones" type="button">
+                ◌ <span>Mediciones</span>
+            </button>
+
+            <button class="menu-boton"
+                    data-seccion="ventas" type="button">
+                ▤ <span>Ventas</span>
+            </button>
+
+            <a class="menu-boton"
+               href="/vendedor/facturas.html"
+               style="text-decoration:none">
+                ▤ <span>Facturas</span>
+            </a>
+
+            <a class="menu-boton"
+                id="volver-admin"
+                href="/admin/dashboard.html"
+                style="display:none; text-decoration:none;">
+                ← <span>Volver al panel ADMIN</span>
+            </a>
+
+        </nav>
+
+        <!-- ========== CONTENIDO PRINCIPAL ========== -->
+        <main class="contenido">
+
+            <div id="mensaje"
+                 class="mensaje"
+                 role="status"
+                 aria-live="polite"
+                 hidden>
+            </div>
+
+            <!-- ========== RESUMEN ========== -->
+            <section id="inicio" class="seccion visible">
+
+                <div class="seccion-encabezado">
+                    <div>
+                        <p class="subtitulo">ADMINISTRACIÓN</p>
+                        <h1>Panel del vendedor</h1>
+                        <p>Gestiona la operación diaria de ÓpticaVision.</p>
+                    </div>
+
+                    <button type="button"
+                            class="boton boton-secundario"
+                            id="refrescar">
+                        Actualizar resumen
+                    </button>
+                </div>
+
+                <div class="estadisticas">
+                    <article class="estadistica">
+                        <span>Productos activos</span>
+                        <strong id="k-productos">—</strong>
+                    </article>
+
+                    <article class="estadistica">
+                        <span>Stock bajo (&lt; 5)</span>
+                        <strong id="k-stock">—</strong>
+                    </article>
+
+                    <article class="estadistica">
+                        <span>Clientes</span>
+                        <strong id="k-clientes">—</strong>
+                    </article>
+
+                    <article class="estadistica">
+                        <span>Ventas</span>
+                        <strong id="k-ventas">—</strong>
+                    </article>
+                </div>
+
+                <h2>Accesos rápidos</h2>
+
+                <div class="accesos">
+                    <button class="acceso"
+                            data-ir="inventario" type="button">
+                        ▣
+                        <strong>Inventario</strong>
+                        <span>Monturas, cristales y accesorios</span>
+                    </button>
+
+                    <button class="acceso"
+                            data-ir="clientes" type="button">
+                        ♙
+                        <strong>Clientes</strong>
+                        <span>Registro y edición</span>
+                    </button>
+
+                    <button class="acceso"
+                            data-ir="mediciones" type="button">
+                        ◌
+                        <strong>Mediciones</strong>
+                        <span>Historial óptico</span>
+                    </button>
+
+                    <button class="acceso"
+                            data-ir="ventas" type="button">
+                        ▤
+                        <strong>Ventas</strong>
+                        <span>Facturación y stock</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ========== INVENTARIO ========== -->
+            <section id="inventario" class="seccion">
+
+                <div class="seccion-encabezado">
+                    <div>
+                        <h1>Inventario</h1>
+                        <p>Registra y actualiza los productos disponibles.</p>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2 id="titulo-producto">Registrar producto</h2>
+
+                    <form id="form-producto" class="formulario">
+                        <input type="hidden" name="idProducto">
+
+                        <label>
+                            Nombre
+                            <input name="nombre"
+                                   maxlength="150" required>
+                        </label>
+
+                        <label>
+                            Categoría
+                            <select name="categoria" required>
+                                <option value="MONTURA">Montura</option>
+                                <option value="CRISTAL">Cristal</option>
+                                <option value="ACCESORIO">Accesorio</option>
+                            </select>
+                        </label>
+
+                        <label>
+                            Marca
+                            <input name="marca" maxlength="100">
+                        </label>
+
+                        <label>
+                            Material
+                            <input name="material" maxlength="100">
+                        </label>
+
+                        <label>
+                            Forma
+                            <input name="forma" maxlength="50">
+                        </label>
+
+                        <label>
+                            Precio (L)
+                            <input type="number" name="precio"
+                                   min="0" step="0.01" required>
+                        </label>
+
+                        <label>
+                            Existencias
+                            <input type="number" name="stock"
+                                   min="0" step="1" required>
+                        </label>
+
+                        <label class="campo-completo">
+                            Descripción
+                            <textarea name="descripcion"
+                                      maxlength="500" rows="2"></textarea>
+                        </label>
+
+                        <label class="check">
+                            <input type="checkbox" name="activo" checked>
+                            Producto activo
+                        </label>
+
+                        <div class="acciones">
+                            <button type="submit" class="boton">
+                                Guardar producto
+                            </button>
+                            <button type="button"
+                                    class="boton boton-secundario"
+                                    id="cancelar-producto">
+                                Limpiar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="panel">
+                    <div class="fila-titulo">
+                        <h2>Productos registrados</h2>
+                        <input type="search" id="filtro-productos"
+                               placeholder="Buscar producto"
+                               aria-label="Buscar producto">
+                    </div>
+
+                    <div class="tabla-contenedor">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Categoría</th>
+                                    <th>Precio</th>
+                                    <th>Stock</th>
+                                    <th>Estado</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-productos"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========== CLIENTES ========== -->
+            <section id="clientes" class="seccion">
+
+                <div class="seccion-encabezado">
+                    <div>
+                        <h1>Clientes</h1>
+                        <p>Registra clientes vinculados a cuentas CLIENTE.</p>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2 id="titulo-cliente">Registrar cliente</h2>
+
+                    <form id="form-cliente" class="formulario">
+                        <input type="hidden" name="idCliente">
+
+                        <label>
+                            Nombre completo
+                            <input name="nombre"
+                                   maxlength="100" required>
+                        </label>
+
+                        <label>
+                            DNI
+                            <input name="dni"
+                                   maxlength="20" required>
+                        </label>
+
+                        <label>
+                            Teléfono
+                            <input name="telefono"
+                                   maxlength="20" required>
+                        </label>
+
+                        <label>
+                            Correo
+                            <input type="email" name="correo"
+                                   maxlength="150" required>
+                        </label>
+
+                        <label class="campo-completo" id="campo-password">
+                            Contraseña inicial del cliente
+                            <input type="password" name="password"
+                                   minlength="12"
+                                   autocomplete="new-password">
+                            <small>
+                                Al registrar una cuenta nueva, usa una
+                                contraseña temporal de al menos 12 caracteres.
+                                No utilices contraseñas personales.
+                            </small>
+                        </label>
+
+                        <div class="acciones">
+                            <button type="submit" class="boton">
+                                Guardar cliente
+                            </button>
+                            <button type="button"
+                                    class="boton boton-secundario"
+                                    id="cancelar-cliente">
+                                Limpiar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="panel">
+                    <h2>Clientes registrados</h2>
+
+                    <div class="tabla-contenedor">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>DNI</th>
+                                    <th>Teléfono</th>
+                                    <th>Correo</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-clientes"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========== MEDICIONES ========== -->
+            <section id="mediciones" class="seccion">
+
+                <div class="seccion-encabezado">
+                    <div>
+                        <h1>Mediciones</h1>
+                        <p>Consulta y registra historiales de graduación.</p>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <label>
+                        Cliente
+                        <select id="medicion-cliente">
+                            <option value="">Selecciona un cliente</option>
+                        </select>
+                    </label>
+
+                    <h2>Nueva medición</h2>
+
+                    <form id="form-medicion" class="formulario">
+
+                        <label>
+                            Fecha
+                            <input type="date" name="fechaMedicion" required>
+                        </label>
+
+                        <label>
+                            Esfera OD
+                            <input name="esferaOD" type="number" step="0.01">
+                        </label>
+
+                        <label>
+                            Cilindro OD
+                            <input name="cilindroOD" type="number" step="0.01">
+                        </label>
+
+                        <label>
+                            Eje OD
+                            <input name="ejeOD" type="number"
+                                   min="0" max="180" step="1">
+                        </label>
+
+                        <label>
+                            Adición OD
+                            <input name="adicionOD" type="number" step="0.01">
+                        </label>
+
+                        <label>
+                            Esfera OI
+                            <input name="esferaOI" type="number" step="0.01">
+                        </label>
+
+                        <label>
+                            Cilindro OI
+                            <input name="cilindroOI" type="number" step="0.01">
+                        </label>
+
+                        <label>
+                            Eje OI
+                            <input name="ejeOI" type="number"
+                                   min="0" max="180" step="1">
+                        </label>
+
+                        <label>
+                            Adición OI
+                            <input name="adicionOI" type="number" step="0.01">
+                        </label>
+
+                        <label class="campo-completo">
+                            Observaciones
+                            <textarea name="observaciones"
+                                      maxlength="500" rows="2"></textarea>
+                        </label>
+
+                        <div class="acciones">
+                            <button type="submit" class="boton">
+                                Guardar medición
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="panel">
+                    <h2>Historial del cliente</h2>
+
+                    <div class="tabla-contenedor">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Fecha</th>
+                                    <th>OD: E / C / Eje / Add</th>
+                                    <th>OI: E / C / Eje / Add</th>
+                                    <th>Observaciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-mediciones"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========== VENTAS ========== -->
+            <section id="ventas" class="seccion">
+
+                <div class="seccion-encabezado">
+                    <div>
+                        <h1>Ventas</h1>
+                        <p>Registra ventas con actualización automática de inventario.</p>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>Registrar venta</h2>
+
+                    <form id="form-venta" class="formulario">
+
+                        <label>
+                            Cliente
+                            <select name="idCliente"
+                                    id="venta-cliente" required>
+                                <option value="">Selecciona un cliente</option>
+                            </select>
+                        </label>
+
+                        <label>
+                            Medición asociada (opcional)
+                            <select name="idMedicion" id="venta-medicion">
+                                <option value="">Sin medición</option>
+                            </select>
+                        </label>
+
+                        <div class="campo-completo">
+                            <h3>Productos de la venta</h3>
+                            <div id="lineas-venta"></div>
+
+                            <button type="button"
+                                    class="boton boton-secundario"
+                                    id="agregar-linea">
+                                Agregar producto
+                            </button>
+                        </div>
+
+                        <div class="campo-completo aviso" id="impuesto-info">
+                            El impuesto se calcula al guardar la venta
+                            según la configuración del sistema.
+                        </div>
+
+                        <div class="acciones">
+                            <button class="boton" type="submit">
+                                Confirmar venta
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+
+                <div class="panel">
+                    <h2>Historial de ventas</h2>
+
+                    <div class="tabla-contenedor">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Fecha</th>
+                                    <th>Cliente</th>
+                                    <th>Subtotal</th>
+                                    <th>Impuesto</th>
+                                    <th>Total</th>
+                                    <th>Estado</th>
+                                    <th>Detalle</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-ventas"></tbody>
+                        </table>
+                    </div>
+
+                    <div id="detalle-venta"
+                         class="detalle-venta" hidden>
+                    </div>
+                </div>
+
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ========== PIE DE PÁGINA ========== -->
+    <footer>
+        ÓpticaVision · Sistema de gestión para ópticas
+    </footer>
+<script>
+document.addEventListener("DOMContentLoaded", async function () {
+
+    const botonAdmin = document.getElementById("volver-admin");
+
+    if (!botonAdmin) {
+        return;
+    }
+
+    botonAdmin.style.display = "none";
+
+    try {
+        const respuesta = await fetch("/vendedor/rol-actual", {
+            credentials: "same-origin",
+            cache: "no-store"
+        });
+
+        if (!respuesta.ok) {
+            return;
+        }
+
+        const datos = await respuesta.json();
+
+        if (datos.esAdmin === true) {
+            botonAdmin.style.display = "flex";
+        }
+
+    } catch (error) {
+        botonAdmin.style.display = "none";
+    }
+
+});
+</script>
 </body>
+
 </html>
