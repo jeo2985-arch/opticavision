@@ -1,3 +1,4 @@
+
 package com.opticavision.service;
 
 import java.math.BigDecimal;
@@ -175,7 +176,7 @@ public class VendedorService {
     @Transactional
     public Map<String, Object> registrarVenta(Map<String, Object> d, String correoVendedor) {
         int idVendedor = buscarEntero("""
-                SELECT id FROM dbo.Usuarios WHERE correo=? AND rol='VENDEDOR' AND activo=1
+                SELECT id FROM dbo.Usuarios WHERE correo=? AND rol IN ('ADMIN', 'VENDEDOR') AND activo=1
                 """, correoVendedor);
         int idCliente = enteroPositivo(d, "idCliente");
         buscarEntero("SELECT idCliente FROM dbo.Clientes WHERE idCliente=?", idCliente);

@@ -76,7 +76,7 @@ public class AmpliacionController {
                 <title>Comprobante de venta</title><style>
                 body{font:16px Arial,sans-serif;color:#19314b;max-width:860px;margin:35px auto;padding:16px;background:#f4f7fb}
                 main{background:white;padding:32px;border-radius:12px}h1{color:#0a5788}p{line-height:1.5}
-                table{border-collapse:collapse;width:100%;margin-top:24px}td,th{text-align:left;padding:12px;border-bottom:1px solid #dbe3ec}
+                table{border-collapse:collapse;width:100%%;margin-top:24px}td,th{text-align:left;padding:12px;border-bottom:1px solid #dbe3ec}
                 .totales{text-align:right;margin-top:24px}.totales p{margin:8px 0}.alerta{font-size:13px;color:#7b4d00;background:#fff4d7;padding:12px;border-radius:8px}
                 button{background:#12618b;color:#fff;border:0;border-radius:6px;padding:12px 20px;cursor:pointer}
                 @media print{body{background:white;margin:0}main{padding:0}button{display:none}}

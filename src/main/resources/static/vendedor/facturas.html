@@ -1,7 +1,153 @@
 <!doctype html>
-<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Facturas de ventas | ÓpticaVision</title><style>
-body{font:16px Arial,sans-serif;background:#edf3f9;color:#17334b;margin:0}main{max-width:1100px;margin:35px auto;padding:25px}h1{color:#125b87}section{background:white;padding:24px;border-radius:12px}table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:12px;border-bottom:1px solid #dce6ee}a{color:#126b95}#aviso{color:#a12222}button{padding:10px 15px;border:0;border-radius:7px;background:#14658d;color:white;cursor:pointer}
-</style></head><body><main><a href="/vendedor/dashboard.html">Volver al panel</a><h1>Facturas de ventas</h1><p>Consulta los comprobantes de ventas que ya están registradas.</p><p id="aviso" role="status"></p><section style="overflow:auto"><table><thead><tr><th>Venta</th><th>Fecha</th><th>Cliente</th><th>Total (L)</th><th>Estado</th><th>Comprobante</th></tr></thead><tbody id="filas"></tbody></table></section></main><script>
-const escapar=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-fetch('/api/vendedor/ampliacion/facturas',{credentials:'same-origin'}).then(async r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.json();}).then(datos=>{document.querySelector('#filas').innerHTML=datos.map(v=>`<tr><td>${escapar(v.idVenta)}</td><td>${escapar(v.fechaVenta)}</td><td>${escapar(v.cliente)}</td><td>${escapar(v.total)}</td><td>${escapar(v.estado)}</td><td><a target="_blank" rel="noopener" href="/vendedor/factura/${encodeURIComponent(v.idVenta)}">Ver / Imprimir</a></td></tr>`).join('')||'<tr><td colspan="6">Aún no hay ventas.</td></tr>';}).catch(e=>document.querySelector('#aviso').textContent='No se pudo cargar: '+e.message);
-</script></body></html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Facturas de ventas | ÓpticaVision</title>
+    <style>
+        :root{--azul:#123b65;--acento:#126b95;--fondo:#edf3f9;--borde:#dce6ee;--texto:#17334b}
+        *{box-sizing:border-box}
+        body{font:16px Arial,sans-serif;background:var(--fondo);color:var(--texto);margin:0}
+        main{max-width:1250px;margin:30px auto;padding:20px}
+        h1{color:#125b87;margin:24px 0 15px;font-size:clamp(1.7rem,4vw,2.3rem)}
+        a{color:var(--acento)}
+        .descripcion{line-height:1.5}
+        .resumen{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin:22px 0}
+        .dato{border:1px solid var(--borde);background:#fff;border-radius:13px;padding:20px}
+        .dato span{display:block;color:#54708b;font-size:.9rem;margin-bottom:10px}
+        .dato strong{font-size:1.55rem;color:var(--azul)}
+        .filtros{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:18px 0}
+        .filtros input{padding:12px 14px;border:1px solid #b9ccdc;border-radius:9px;font:inherit;min-width:240px;flex:1;max-width:500px}
+        .filtros button{border:1px solid var(--borde);background:white;border-radius:9px;padding:12px 15px;color:var(--azul);cursor:pointer}
+        .grupo{background:#fff;border:1px solid var(--borde);border-radius:14px;margin:14px 0;overflow:hidden}
+        .grupo summary{display:flex;align-items:center;gap:14px;justify-content:space-between;padding:18px 22px;cursor:pointer;list-style:none}
+        .grupo summary::-webkit-details-marker{display:none}
+        .grupo summary::before{content:'▸';color:var(--acento);font-weight:bold}
+        .grupo[open] summary::before{content:'▾'}
+        .nombre{font-weight:750;flex:1;color:var(--azul)}
+        .detalles-grupo{display:flex;gap:14px;align-items:center;flex-wrap:wrap;color:#506982;font-size:.92rem}
+        .total-grupo{font-weight:bold;color:var(--azul)}
+        .tabla-contenedor{overflow:auto;border-top:1px solid var(--borde);padding:0 18px 16px}
+        table{width:100%;border-collapse:collapse;min-width:700px}
+        th,td{text-align:left;padding:14px 12px;border-bottom:1px solid var(--borde)}
+        th{color:#17334b;font-weight:bold}
+        .ver-pdf{display:inline-block;background:#e5f3fa;border-radius:8px;padding:9px 12px;white-space:nowrap;text-decoration:none;font-weight:bold}
+        .ver-pdf:hover{background:#d2eaf6}
+        .estado{font-weight:600;font-size:.85rem}
+        .mensaje{color:#a12222;margin:15px 0}
+        .vacio{padding:22px;background:#fff;border-radius:12px}
+        @media(max-width:650px){main{padding:14px;margin:8px auto}.resumen{grid-template-columns:1fr}.grupo summary{align-items:flex-start;flex-wrap:wrap}.detalles-grupo{width:100%;padding-left:22px}}
+    </style>
+</head>
+<body>
+<main>
+    <a href="/vendedor/dashboard.html">← Volver al panel</a>
+    <h1>Facturas de ventas</h1>
+    <p class="descripcion">Consulta los comprobantes de ventas agrupados por cliente. Abre cada grupo para ver e imprimir sus facturas en PDF.</p>
+
+    <div class="resumen" aria-label="Resumen de facturas">
+        <div class="dato"><span>Facturas registradas</span><strong id="total-facturas">—</strong></div>
+        <div class="dato"><span>Clientes con compras</span><strong id="total-clientes">—</strong></div>
+        <div class="dato"><span>Importe total registrado</span><strong id="total-importe">—</strong></div>
+    </div>
+
+    <div class="filtros">
+        <label for="buscar">Buscar facturas:</label>
+        <input id="buscar" type="search" placeholder="Nombre del cliente o número de venta" autocomplete="off">
+        <button id="expandir" type="button">Mostrar todas</button>
+        <button id="contraer" type="button">Ocultar todas</button>
+    </div>
+    <p id="aviso" class="mensaje" role="status" aria-live="polite"></p>
+    <div id="grupos" aria-label="Facturas agrupadas por cliente"></div>
+</main>
+<script>
+    const escapar = valor => String(valor ?? '').replace(/[&<>"']/g, caracter => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[caracter]));
+    const dinero = valor => 'L ' + new Intl.NumberFormat('es-HN',{minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(valor) || 0);
+    const fechaLocal = valor => {
+        if (!valor) return 'Sin fecha';
+        const fecha = new Date(valor);
+        return Number.isNaN(fecha.getTime()) ? String(valor) : new Intl.DateTimeFormat('es-HN',{year:'numeric',month:'2-digit',day:'2-digit',timeZone:'America/Tegucigalpa'}).format(fecha);
+    };
+    const gruposContenedor = document.querySelector('#grupos');
+    const aviso = document.querySelector('#aviso');
+    const buscar = document.querySelector('#buscar');
+    let facturas = [];
+
+    function agruparPorCliente(registros) {
+        const grupos = new Map();
+        for (const factura of registros) {
+            const nombre = String(factura.cliente ?? 'Cliente sin nombre').trim() || 'Cliente sin nombre';
+            const llave = nombre.toLocaleLowerCase('es');
+            if (!grupos.has(llave)) grupos.set(llave, {nombre, facturas:[],total:0});
+            const grupo = grupos.get(llave);
+            grupo.facturas.push(factura);
+            grupo.total += Number(factura.total) || 0;
+        }
+        return [...grupos.values()].sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
+    }
+
+    function mostrarFacturas() {
+        const filtro = buscar.value.trim().toLocaleLowerCase('es');
+        const grupos = agruparPorCliente(facturas).map(grupo => ({
+            ...grupo,
+            facturas: grupo.facturas.filter(factura =>
+                !filtro || grupo.nombre.toLocaleLowerCase('es').includes(filtro) || String(factura.idVenta ?? '').includes(filtro)
+            )
+        })).filter(grupo => grupo.facturas.length > 0);
+
+        if (grupos.length === 0) {
+            gruposContenedor.innerHTML = '<p class="vacio">No se encontraron facturas para esta búsqueda.</p>';
+            return;
+        }
+        gruposContenedor.innerHTML = grupos.map(grupo => {
+            const totalVisible = grupo.facturas.reduce((suma,factura)=>suma+(Number(factura.total)||0),0);
+            const filas = [...grupo.facturas].sort((a,b)=>(Number(b.idVenta)||0)-(Number(a.idVenta)||0)).map(factura => `
+                <tr>
+                    <td>#${escapar(factura.idVenta)}</td>
+                    <td>${escapar(fechaLocal(factura.fechaVenta))}</td>
+                    <td>${escapar(dinero(factura.total))}</td>
+                    <td><span class="estado">${escapar(factura.estado)}</span></td>
+                    <td><a class="ver-pdf" target="_blank" rel="noopener" href="/vendedor/facturas/${encodeURIComponent(factura.idVenta)}/pdf">Ver / Imprimir PDF</a></td>
+                </tr>
+            `).join('');
+            return `
+                <details class="grupo" ${filtro ? 'open' : ''}>
+                    <summary>
+                        <span class="nombre">${escapar(grupo.nombre)}</span>
+                        <span class="detalles-grupo"><span>${grupo.facturas.length} ${grupo.facturas.length===1?'factura':'facturas'}</span><span class="total-grupo">${escapar(dinero(totalVisible))}</span></span>
+                    </summary>
+                    <div class="tabla-contenedor">
+                        <table>
+                            <thead><tr><th>Venta</th><th>Fecha</th><th>Total</th><th>Estado</th><th>Comprobante</th></tr></thead>
+                            <tbody>${filas}</tbody>
+                        </table>
+                    </div>
+                </details>`;
+        }).join('');
+    }
+
+    document.querySelector('#expandir').addEventListener('click',()=>document.querySelectorAll('.grupo').forEach(grupo=>grupo.open=true));
+    document.querySelector('#contraer').addEventListener('click',()=>document.querySelectorAll('.grupo').forEach(grupo=>grupo.open=false));
+    buscar.addEventListener('input',mostrarFacturas);
+
+    fetch('/api/vendedor/ampliacion/facturas',{credentials:'same-origin'})
+        .then(async respuesta => {
+            if (!respuesta.ok) throw new Error('HTTP '+respuesta.status);
+            return respuesta.json();
+        })
+        .then(datos => {
+            if (!Array.isArray(datos)) throw new Error('Respuesta de facturas no válida');
+            facturas = datos;
+            document.querySelector('#total-facturas').textContent = facturas.length;
+            document.querySelector('#total-clientes').textContent = agruparPorCliente(facturas).length;
+            document.querySelector('#total-importe').textContent = dinero(facturas.reduce((suma,factura)=>suma+(Number(factura.total)||0),0));
+            aviso.textContent = '';
+            mostrarFacturas();
+        })
+        .catch(error=>{
+            aviso.textContent = 'No se pudieron cargar las facturas: '+error.message;
+            gruposContenedor.innerHTML = '';
+        });
+</script>
+</body>
+</html>
